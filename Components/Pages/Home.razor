@@ -1,0 +1,92 @@
+@page "/"
+@inject ExpenseDatabase Database
+
+<PageTitle>Expense Tracker2</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Expense Tracker</MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudText Typo="Typo.h6" Class="mb-2">Total Spent: Rs. @totalAmount.ToString("N2")</MudText>
+    </MudPaper>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="newTitle" Label="Title" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudNumericField @bind-Value="newAmount" Label="Amount" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudSelect @bind-Value="newCategory" Label="Category">
+                    <MudSelectItem Value="@("Food")">Food</MudSelectItem>
+                    <MudSelectItem Value="@("Travel")">Travel</MudSelectItem>
+                    <MudSelectItem Value="@("Bills")">Bills</MudSelectItem>
+                    <MudSelectItem Value="@("Other")">Other</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="2" Class="d-flex align-center">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddExpense" FullWidth="true">Add</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudTable Items="@expenses" Hover="true">
+        <HeaderContent>
+            <MudTh>Title</MudTh>
+            <MudTh>Amount</MudTh>
+            <MudTh>Category</MudTh>
+            <MudTh>Date</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Title</MudTd>
+            <MudTd>Rs. @context.Amount.ToString("N2")</MudTd>
+            <MudTd>@context.Category</MudTd>
+            <MudTd>@context.Date.ToString("dd MMM yyyy")</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteExpense(context))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+@code {
+    private List<Expense> expenses = new();
+    private string newTitle = string.Empty;
+    private double newAmount;
+    private string newCategory = "Food";
+    private double totalAmount => expenses.Sum(e => e.Amount);
+
+    protected override async Task OnInitializedAsync()
+    {
+        expenses = await Database.GetExpensesAsync();
+    }
+
+    private async Task AddExpense()
+    {
+        if (string.IsNullOrWhiteSpace(newTitle) || newAmount <= 0)
+            return;
+
+        var expense = new Expense
+        {
+            Title = newTitle,
+            Amount = newAmount,
+            Category = newCategory,
+            Date = DateTime.Now
+        };
+
+        await Database.SaveExpenseAsync(expense);
+        expenses = await Database.GetExpensesAsync();
+
+        newTitle = string.Empty;
+        newAmount = 0;
+    }
+
+    private async Task DeleteExpense(Expense expense)
+    {
+        await Database.DeleteExpenseAsync(expense);
+        expenses = await Database.GetExpensesAsync();
+    }
+}
