@@ -5,4 +5,14 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-@Body
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudText Typo="Typo.h6" Class="mr-6">Expense Tracker</MudText>
+        <MudButton Href="/" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.List">Expenses</MudButton>
+        <MudButton Href="/add" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Add">Add Expense</MudButton>
+    </MudAppBar>
+
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>

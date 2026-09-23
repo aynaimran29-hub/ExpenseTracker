@@ -1,0 +1,62 @@
+@page "/edit/{Id:int}"
+@inject ExpenseDatabase Database
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Edit Expense</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Edit Expense</MudText>
+
+    @if (expense is null)
+    {
+        <MudText>Loading...</MudText>
+    }
+    else
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudTextField @bind-Value="expense.Title" Label="Title" Class="mb-3" />
+            <MudNumericField @bind-Value="expense.Amount" Label="Amount" Class="mb-3" />
+            <MudSelect @bind-Value="expense.Category" Label="Category" Class="mb-3">
+                <MudSelectItem Value="@("Food")">Food</MudSelectItem>
+                <MudSelectItem Value="@("Travel")">Travel</MudSelectItem>
+                <MudSelectItem Value="@("Bills")">Bills</MudSelectItem>
+                <MudSelectItem Value="@("Other")">Other</MudSelectItem>
+            </MudSelect>
+
+            <div class="d-flex gap-2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save">Update</MudButton>
+                <MudButton Variant="Variant.Outlined" Href="/">Cancel</MudButton>
+            </div>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Expense? expense;
+
+    protected override async Task OnInitializedAsync()
+    {
+        expense = await Database.GetExpenseAsync(Id);
+        if (expense is null)
+            Navigation.NavigateTo("/");
+    }
+
+    private async Task Save()
+    {
+        if (expense is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(expense.Title) || expense.Amount <= 0)
+        {
+            Snackbar.Add("Please enter a title and an amount greater than 0.", Severity.Warning);
+            return;
+        }
+
+        await Database.UpdateExpenseAsync(expense);
+        Navigation.NavigateTo("/");
+    }
+}

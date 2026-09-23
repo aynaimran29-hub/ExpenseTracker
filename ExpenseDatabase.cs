@@ -1,4 +1,4 @@
-using SQLite;
+﻿using SQLite;
 
 namespace ExpenseTracker2;
 
@@ -22,10 +22,22 @@ public class ExpenseDatabase
         return await _database!.Table<Expense>().OrderByDescending(e => e.Date).ToListAsync();
     }
 
+    public async Task<Expense?> GetExpenseAsync(int id)
+    {
+        await InitAsync();
+        return await _database!.Table<Expense>().Where(e => e.Id == id).FirstOrDefaultAsync();
+    }
+
     public async Task<int> SaveExpenseAsync(Expense expense)
     {
         await InitAsync();
         return await _database!.InsertAsync(expense);
+    }
+
+    public async Task<int> UpdateExpenseAsync(Expense expense)
+    {
+        await InitAsync();
+        return await _database!.UpdateAsync(expense);
     }
 
     public async Task<int> DeleteExpenseAsync(Expense expense)

@@ -1,0 +1,52 @@
+@page "/add"
+@inject ExpenseDatabase Database
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Add Expense</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Add Expense</MudText>
+
+    <MudPaper Class="pa-4" Elevation="2">
+        <MudTextField @bind-Value="title" Label="Title" Class="mb-3" />
+        <MudNumericField @bind-Value="amount" Label="Amount" Class="mb-3" />
+        <MudSelect @bind-Value="category" Label="Category" Class="mb-3">
+            <MudSelectItem Value="@("Food")">Food</MudSelectItem>
+            <MudSelectItem Value="@("Travel")">Travel</MudSelectItem>
+            <MudSelectItem Value="@("Bills")">Bills</MudSelectItem>
+            <MudSelectItem Value="@("Other")">Other</MudSelectItem>
+        </MudSelect>
+
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save">Save</MudButton>
+            <MudButton Variant="Variant.Outlined" Href="/">Cancel</MudButton>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string title = string.Empty;
+    private double amount;
+    private string category = "Food";
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(title) || amount <= 0)
+        {
+            Snackbar.Add("Please enter a title and an amount greater than 0.", Severity.Warning);
+            return;
+        }
+
+        var expense = new Expense
+        {
+            Title = title,
+            Amount = amount,
+            Category = category,
+            Date = DateTime.Now
+        };
+
+        await Database.SaveExpenseAsync(expense);
+        Navigation.NavigateTo("/");
+    }
+}
